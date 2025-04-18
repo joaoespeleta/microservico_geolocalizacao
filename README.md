@@ -15,7 +15,7 @@ Este projeto é um sistema de rastreamento de entregas com base no CEP da loja. 
 
 Imagem da tela principal do sistema:
 
-![Tela do Sistema](img/servico.png)
+![Tela do Sistema](img/servio.png)
 
 ---
 

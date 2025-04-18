@@ -52,16 +52,16 @@ Imagem da tela principal do sistema:
 ## 📦 Estrutura
 
 ```
-📁 public/
+📂 public/
   ├── script.js
   ├── index.html
 
- 📁 img/
+ 📂 img/
   ├── servico.png
 
-  ─ server.js
-  ─ db.js
-  ─ .env
+ ├️ 📄 .env
+ ├️ 📄 server.js
+ ├️ 📄 db.js
 ```
 
 ---

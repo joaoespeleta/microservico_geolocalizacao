@@ -9,31 +9,36 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 // ROTAS
 
-// Adicionar loja
-app.post('/api/lojas', (req, res) => {
+// Adicionar restaurante
+app.post('/api/restaurantes', (req, res) => {
   const { nome, cep } = req.body;
-  db.query('INSERT INTO lojas (nome, cep) VALUES (?, ?)', [nome, cep], (err) => {
-    if (err) return res.status(500).json({ error: 'Erro ao adicionar loja' });
-    res.status(200).json({ success: true });
-  });
+  // Campos obrigatórios: name, email, password, cep
+  // Usando placeholders para email e senha por enquanto
+  db.query(
+    'INSERT INTO restaurants2 (name, email, password, cep) VALUES (?, "", "", ?)',
+    [nome, cep],
+    (err) => {
+      if (err) return res.status(500).json({ error: 'Erro ao adicionar restaurante' });
+      res.status(200).json({ success: true });
+    }
+  );
 });
 
-// Listar lojas
-app.get('/api/lojas', (req, res) => {
-  db.query('SELECT * FROM lojas', (err, results) => {
-    if (err) return res.status(500).json({ error: 'Erro ao buscar lojas' });
+// Listar restaurantes
+app.get('/api/restaurantes', (req, res) => {
+  db.query('SELECT id, name AS nome, cep FROM restaurants2', (err, results) => {
+    if (err) return res.status(500).json({ error: 'Erro ao buscar restaurantes' });
     res.json(results);
   });
 });
 
-// Remover loja
-app.delete('/api/lojas/:id', (req, res) => {
+// Remover restaurante
+app.delete('/api/restaurantes/:id', (req, res) => {
   const id = req.params.id;
-  db.query('DELETE FROM lojas WHERE id = ?', [id], (err) => {
-    if (err) return res.status(500).json({ error: 'Erro ao deletar loja' });
+  db.query('DELETE FROM restaurants2 WHERE id = ?', [id], (err) => {
+    if (err) return res.status(500).json({ error: 'Erro ao deletar restaurante' });
     res.status(200).json({ success: true });
   });
 });

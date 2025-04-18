@@ -1,13 +1,24 @@
+// public/script.js
+
 let trackingInterval = null;
 
+/**
+ * Inicia o rastreamento de localização em relação a um CEP destino.
+ * @param {string|null} cepManual - CEP passado manualmente, se houver.
+ */
 async function startTracking(cepManual = null) {
   clearInterval(trackingInterval);
 
   const cep = cepManual || document.getElementById('cep').value;
-  if (!cep) return alert("Digite um CEP válido");
+  if (!cep) {
+    alert("Digite um CEP válido");
+    return;
+  }
 
+  // Chama BrasilAPI para obter coordenadas geográficas do CEP
   const cepRes = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`);
   const cepData = await cepRes.json();
+
   if (!cepData.location || !cepData.location.coordinates) {
     document.getElementById('status').innerText = 'CEP inválido ou sem coordenadas.';
     return;
@@ -16,6 +27,7 @@ async function startTracking(cepManual = null) {
   const destinoLat = cepData.location.coordinates.latitude;
   const destinoLng = cepData.location.coordinates.longitude;
 
+  // A cada segundo, obtém a posição atual e calcula a distância
   trackingInterval = setInterval(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude, longitude } = pos.coords;
@@ -25,56 +37,52 @@ async function startTracking(cepManual = null) {
   }, 1000);
 }
 
+/**
+ * Calcula a distância em km entre duas coordenadas usando a fórmula de Haversine.
+ */
 function calcularDistancia(lat1, lon1, lat2, lon2) {
-  const R = 6371;
+  const R = 6371; // Raio da Terra em km
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) *
+            Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
+/**
+ * Carrega a lista de restaurantes do backend e popula a tabela.
+ */
 async function carregarLojas() {
-  const res = await fetch('/api/lojas');
-  const lojas = await res.json();
+  const res = await fetch('/api/restaurantes');
+  const restaurantes = await res.json();
+
   const tbody = document.querySelector('#tabelaLojas tbody');
   tbody.innerHTML = '';
 
-  lojas.forEach(loja => {
+  restaurantes.forEach(rest => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${loja.nome}</td>
-      <td>${loja.cep}</td>
+      <td>${rest.nome}</td>
+      <td>${rest.cep}</td>
       <td>
-        <button onclick="startTracking('${loja.cep}')">Rastrear</button>
-        <button onclick="removerLoja(${loja.id})">Remover</button>
+        <button onclick="startTracking('${rest.cep}')">Rastrear</button>
+        <button onclick="removerLoja(${rest.id})">Remover</button>
       </td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-async function adicionarLoja() {
-  const nome = document.getElementById('nomeLoja').value;
-  const cep = document.getElementById('cepLoja').value;
-  if (!nome || !cep) return alert('Preencha o nome e o CEP');
-
-  await fetch('/api/lojas', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, cep }),
-  });
-
-  document.getElementById('nomeLoja').value = '';
-  document.getElementById('cepLoja').value = '';
-  carregarLojas();
-}
-
+/**
+ * Remove um restaurante pelo ID e recarrega a lista.
+ */
 async function removerLoja(id) {
-  await fetch(`/api/lojas/${id}`, { method: 'DELETE' });
+  await fetch(`/api/restaurantes/${id}`, { method: 'DELETE' });
   carregarLojas();
 }
 
+// Quando a página carrega, já busca os restaurantes
 window.onload = carregarLojas;
